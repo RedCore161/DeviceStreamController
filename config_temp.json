@@ -1,0 +1,5 @@
+{
+  "ip" : "<SERVER-IP>:1935",
+  "stream": "<STREAM-KEY>",
+  "url": "<STREAMING-URL>"
+}
