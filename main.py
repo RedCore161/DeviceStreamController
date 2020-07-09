@@ -8,6 +8,7 @@ import requests
 
 # Loading config
 # =====================================
+from urllib3 import HTTPConnectionPool
 
 with open('config.json') as f:
     CONFIG = json.load(f)
@@ -133,9 +134,8 @@ def main():
                     message(file, "Empty")
                     requests.post(URL_PING, data={'key': STREAM_KEY})
 
-            except ConnectionError:
-                message(file, "Error")
-                pass
+            except Exception as e:
+                message(file, "Error: {}".format(e))
 
         time.sleep(SLEEP_TIME)
 
