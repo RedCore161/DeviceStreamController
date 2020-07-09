@@ -1,3 +1,5 @@
 #!/usr/bin/env bash
 
-python3 /home/pi/DeviceStreamController/main.py
+cd /home/pi/DeviceStreamController
+
+python3 main.py

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-sleep 5
+sleep 10
 
 git reset --hard origin
 

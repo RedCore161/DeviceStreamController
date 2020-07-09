@@ -25,7 +25,7 @@ URL_CLEAR = '{}clear'.format(BASE_URL)
 URL_PING = '{}ping'.format(BASE_URL)
 
 SLEEP_TIME = 5
-RECORD_TIME = 180
+RECORD_TIME = 300
 
 # Known commands
 # =====================================
@@ -50,16 +50,17 @@ class StreamCommand(threading.Thread):
 
     def __init__(self, _cmd=None, _wait=0):
         """
-
         :param _cmd: command to execute
         :param _wait: wait before another action will start
         """
-        self.success = _cmd is not None
         self.cmd = _cmd
         self.wait = _wait
         self.stdout = None
         self.stderr = None
         threading.Thread.__init__(self)
+
+    def has_cmd(self):
+        return self.cmd is not None
 
     def run(self):
         if self.cmd is not None:
@@ -68,7 +69,7 @@ class StreamCommand(threading.Thread):
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE)
 
-            self.stdout, self.stderr = p.communicate()
+            #self.stdout, self.stderr = p.communicate()
         print("Command DONE!", self.cmd)
 
     def __str__(self):
@@ -79,9 +80,15 @@ def evaluate_command(cmd) -> StreamCommand:
     if cmd['cmd'] == START_PI_CAMERA:
 
         # See https://www.raspberrypi.org/forums/viewtopic.php?t=45368
-        exe = "raspivid -o - -vf -hf -fps 30 -b 6000000 | ffmpeg -re -ar 44100 " + \
+        exe = "raspivid -t {} -o - -vf -hf | ffmpeg -re -ar 44100 ".format(RECORD_TIME*1000) + \
               "-ac 2 -acodec pcm_s16le -f s16le -ac 2 -i /dev/zero -f h264 -i - " + \
               "-vcodec copy -acodec aac -ab 128k -g 50 -strict experimental -f flv rtmp://{}/app/{}".format(SERVER_IP, STREAM_KEY)
+
+        exe = "(raspivid -n -t {} -o - -vf -hf | ffmpeg -re -ar 44100 ".format(RECORD_TIME*1000) + \
+              "-ac 2 -acodec pcm_s16le -f s16le -ac 2 -i /dev/zero -f h264 -i - " + \
+              "-vcodec copy -acodec aac -ab 128k -g 50 -strict experimental -f flv rtmp://{}/app/{} ".format(SERVER_IP, STREAM_KEY) +\
+              ">> /dev/null ) & (echo Sleep; sleep 3; killall ffmpeg) &"
+
         return StreamCommand(exe, RECORD_TIME)
 
     elif cmd['cmd'] == STOP_PI_CAMERA:
@@ -112,27 +119,40 @@ def message(file, msg):
 
 
 def main():
+
+    #s = requests.session()
+    #s.config['keep_alive'] = False
+
     with open("boots.txt", "a+") as file:
         message(file, "Booting!")
 
     while True:
         with open("log.txt", "a+") as file:
             try:
+
                 r = requests.get(URL, params={'key': STREAM_KEY})
                 cmds = json.loads(r.content)
+                r.close()
 
                 if cmds['success']:
                     for cmd in cmds['data']:
 
                         message(file, "Command: {}".format(cmd))
-
                         stream_command = evaluate_command(cmd)
-                        if stream_command.success:
-                            requests.post(URL_CLEAR, data={'id': cmd['id'], 'key': STREAM_KEY})
+
+                        if stream_command.has_cmd():
+                            # Send Acknowlegment
+                            r = requests.post(URL_CLEAR, data={'id': cmd['id'], 'key': STREAM_KEY})
+                            r.close()
+
+                            #Start Command-Execution
                             stream_command.start()
+
+
                 else:
                     message(file, "Empty")
-                    requests.post(URL_PING, data={'key': STREAM_KEY})
+                    r = requests.post(URL_PING, data={'key': STREAM_KEY})
+                    r.close()
 
             except Exception as e:
                 message(file, "Error: {}".format(e))
