@@ -111,6 +111,9 @@ def message(file, msg):
 
 
 def main():
+    with open("boots.txt", "a+") as file:
+        message(file, "Booting!")
+
     while True:
         with open("log.txt", "a+") as file:
             try:
