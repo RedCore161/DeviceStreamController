@@ -29,11 +29,13 @@ RECORD_TIME = 180
 # Known commands
 # =====================================
 
-PING = 0
 START_PI_CAMERA = 1
 STOP_PI_CAMERA = 2
+
 START_WEB_CAMERA = 11
 STOP_WEB_CAMERA = 12
+
+PING = 0
 PERFORM_UPDATE = 100
 RESTART = 200
 
@@ -93,13 +95,9 @@ def evaluate_command(cmd) -> StreamCommand:
         exe = 'killall ffmpeg'
         return StreamCommand(exe, 1)
 
-    elif cmd['cmd'] == PERFORM_UPDATE:
-        pass
-        # todo perform fetch
-        # restart
-
-    elif cmd['cmd'] == RESTART:
-        pass
+    elif cmd['cmd'] == PERFORM_UPDATE or cmd['cmd'] == RESTART:
+        exe = 'sudo ./updateController.sh'
+        return StreamCommand(exe, 1)
 
     elif cmd['cmd'] == PING:
         pass
@@ -107,27 +105,34 @@ def evaluate_command(cmd) -> StreamCommand:
     return StreamCommand(None)
 
 
+def message(file, msg):
+    print(msg)
+    file.write("{}\t{}\n".format(time.time(), msg))
+
+
 def main():
-
     while True:
-        try:
-            r = requests.get(URL, params={'key': STREAM_KEY})
-            cmds = json.loads(r.content)
+        with open("log.txt", "a+") as file:
+            try:
+                r = requests.get(URL, params={'key': STREAM_KEY})
+                cmds = json.loads(r.content)
 
-            if cmds['success']:
-                for cmd in cmds['data']:
-                    print("Command: ", cmd)
-                    stream_command = evaluate_command(cmd)
-                    if stream_command.success:
-                        requests.post(URL_CLEAR, data={'id': cmd['id'], 'key': STREAM_KEY})
-                        stream_command.start()
-            else:
-                print("Empty")
-                requests.post(URL_PING, data={'key': STREAM_KEY})
+                if cmds['success']:
+                    for cmd in cmds['data']:
 
-        except ConnectionError:
-            print("Fehler")
-            pass
+                        message(file, "Command: {}".format(cmd))
+
+                        stream_command = evaluate_command(cmd)
+                        if stream_command.success:
+                            requests.post(URL_CLEAR, data={'id': cmd['id'], 'key': STREAM_KEY})
+                            stream_command.start()
+                else:
+                    message(file, "Empty")
+                    requests.post(URL_PING, data={'key': STREAM_KEY})
+
+            except ConnectionError:
+                message(file, "Error")
+                pass
 
         time.sleep(SLEEP_TIME)
 
