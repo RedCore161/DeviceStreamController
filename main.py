@@ -159,8 +159,8 @@ def main():
 
                 else:
                     message(file, "Empty")
-                    r = requests.post(URL_PING, data={'key': STREAM_KEY})
-                    r.close()
+                    #r = requests.post(URL_PING, data={'key': STREAM_KEY})
+                    #r.close()
 
             except Exception as e:
                 message(file, "Error: {}".format(e))
