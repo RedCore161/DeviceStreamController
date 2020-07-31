@@ -24,7 +24,7 @@ URL = '{}get'.format(BASE_URL)
 URL_CLEAR = '{}clear'.format(BASE_URL)
 URL_PING = '{}ping'.format(BASE_URL)
 
-SLEEP_TIME = 10
+SLEEP_TIME = 30
 RECORD_TIME = 300
 
 # Known commands
@@ -93,10 +93,9 @@ def evaluate_command(cmd) -> StreamCommand:
     if cmd['cmd'] == START_PI_CAMERA:
 
         # See https://www.raspberrypi.org/forums/viewtopic.php?t=45368
-        exe = "raspivid -n -o - -vf -hf | ffmpeg -re -ar 44100 " + \
+        exe = "raspivid -n -t 0 -o - -vf -hf | ffmpeg -re -ar 44100 " + \
               "-ac 2 -acodec pcm_s16le -f s16le -ac 2 -i /dev/zero -f h264 -i - " + \
-              "-vcodec copy -acodec aac -ab 128k -g 50 -strict experimental -f flv rtmp://{}/app/{}".format(SERVER_IP, STREAM_KEY) +\
-              " >> /dev/null  &"
+              "-vcodec copy -acodec aac -ab 128k -g 50 -strict experimental -f flv rtmp://{}/app/{}".format(SERVER_IP, STREAM_KEY)
 
         return StreamCommand(exe, RECORD_TIME)
 
