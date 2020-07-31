@@ -12,9 +12,9 @@ sudo apt install git ffmpeg
 
 Use "crontab -e" to add it permanently to your pi-lifecircle:
 ``` 
-@reboot /usr/bin/python3 /home/pi/DeviceStreamController/main.py
+@reboot /bin/sh /home/pi/DeviceStreamController/run.sh
 ```
 Also make the file executable:
 ```
-sudo chmod +x /home/pi/DeviceStreamController/main.py
+sudo chmod +x /home/pi/DeviceStreamController/run.sh
 ``` 

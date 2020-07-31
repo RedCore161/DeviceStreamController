@@ -2,3 +2,4 @@ config.json
 *.txt
 .idea/
 tmp/
+test.py

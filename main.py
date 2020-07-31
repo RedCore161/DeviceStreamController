@@ -38,7 +38,6 @@ STOP_WEB_CAMERA = 12
 
 PING = 0
 PERFORM_UPDATE = 100
-RESTART = 200
 
 # =====================================
 
@@ -64,16 +63,29 @@ class StreamCommand(threading.Thread):
 
     def run(self):
         if self.cmd is not None:
-            p = subprocess.Popen(shlex.split(self.cmd),
-                                 shell=False,
-                                 stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE)
+            last = None
+            for cmd in self.cmd.split("|"):
+                last = run_process(cmd, last)
 
-            #self.stdout, self.stderr = p.communicate()
         print("Command DONE!", self.cmd)
 
     def __str__(self):
         return "{},{},{},{}".format(self.success, self.cmd, "", "")
+
+
+def run_process(cmd, last_pro):
+    if last_pro is None:
+        p = subprocess.Popen(shlex.split(cmd),
+            shell=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE)
+    else:
+        p = subprocess.Popen(shlex.split(cmd),
+            shell=False,
+            stdin=last_pro.stdout,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE)
+    return p
 
 
 def evaluate_command(cmd) -> StreamCommand:
@@ -100,7 +112,7 @@ def evaluate_command(cmd) -> StreamCommand:
         exe = 'killall ffmpeg'
         return StreamCommand(exe, 1)
 
-    elif cmd['cmd'] == PERFORM_UPDATE or cmd['cmd'] == RESTART:
+    elif cmd['cmd'] == PERFORM_UPDATE:
         exe = 'sudo ./updateController.sh'
         return StreamCommand(exe, 1)
 
