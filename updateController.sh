@@ -2,7 +2,7 @@
 
 sleep 10
 
-git reset --hard origin
+#git reset --hard origin
 
 git pull
 
