@@ -140,7 +140,7 @@ def evaluate_command(cmd, params=None) -> StreamCommand:
         return StreamCommand(exe, 1)
 
     elif cmd['cmd'] == SNAPVID_PI_CAMERA:
-        t = 8
+        t = 30
         _t = t * 1000
         w, h = 1600, 900
         w, h = 1280, 720
