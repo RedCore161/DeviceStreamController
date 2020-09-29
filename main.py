@@ -44,6 +44,7 @@ STOP_WEB_CAMERA = 12
 
 PING = 0
 PERFORM_UPDATE = 100
+SHUTDOWN = 200
 
 
 # =====================================
@@ -170,6 +171,10 @@ def evaluate_command(cmd, params=None) -> StreamCommand:
 
     elif cmd['cmd'] == PERFORM_UPDATE:
         exe = 'sudo ./updateController.sh'
+        return StreamCommand(exe, 1)
+
+    elif cmd['cmd'] == SHUTDOWN:
+        exe = 'sudo shutdown -P'
         return StreamCommand(exe, 1)
 
     elif cmd['cmd'] == PING:
