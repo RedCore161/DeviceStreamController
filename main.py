@@ -141,9 +141,8 @@ def evaluate_command(cmd, params=None) -> StreamCommand:
         return StreamCommand(exe, 1)
 
     elif cmd['cmd'] == SNAPVID_PI_CAMERA:
-        t = 30
+        t = 60
         _t = t * 1000
-        w, h = 1600, 900
         w, h = 1280, 720
         '''
         exe = f"raspivid -n -t {_t} -o - -vf -hf -w {w} -h {h} -fps 25 -p 0,0,{w},{h} | ffmpeg -re -ar 44100 -y " + \
@@ -198,7 +197,6 @@ def main():
     while True:
         with open("log.txt", "a+") as file:
             try:
-
                 response = requests.get(URL, params={'key': STREAM_KEY})
                 cmds = response.json()
                 response.close()
