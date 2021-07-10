@@ -3,3 +3,5 @@ config.json
 .idea/
 tmp/
 test.py
+
+logs/*
