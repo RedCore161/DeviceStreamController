@@ -78,6 +78,7 @@ class StreamCommand(object):
 
     def run_instant(self):
         if self.has_cmd():
+            requests.post(URL_CLEAR, data={'id': self.cmd_id, 'key': STREAM_KEY})
             result = run_process(self.cmd)
             if result > 0:
                 print(f"[ERROR] Instant-Command failed!")
