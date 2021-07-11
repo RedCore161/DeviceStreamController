@@ -112,9 +112,7 @@ class StreamCommand(object):
                         time.sleep(3)
                         tries -= 1
 
-                    print("SIZE:", os.path.getsize(self.upload_file))
                     time.sleep(10)
-                    print("SIZE:", os.path.getsize(self.upload_file))
 
                     if tries > 0:
                         result = requests.post(URL_UPLOAD,
@@ -122,8 +120,7 @@ class StreamCommand(object):
                                                data={"token": self.token, "key": STREAM_KEY,
                                                      "filesize": os.path.getsize(self.upload_file)}
                                                )
-                        print("Upload Done!", result.request)
-                        print("Upload Done!", result.__dict__)
+                        print("Upload Done!", result)
             else:
                 print("[ERROR] No upload-file was created!")
 
@@ -188,14 +185,7 @@ def run_process(cmd):
 
 def build_ffmpeg_params(params):
     build = []
-
-    print("params", params)
-
-    if params.get("vf", False):
-        build.append("-vf vflip")
-
-    if params.get("hf", False):
-        build.append("-vf hflip")
+    video_filter = []
 
     if params.get("duration", False):
         build.append(f"-t {params['duration']}")
@@ -208,11 +198,20 @@ def build_ffmpeg_params(params):
         h = float(params.get("height")) / 100.0
         x = float(params.get("x")) / 100.0
         y = float(params.get("y")) / 100.0
-        build.append(f"-vf crop=w=iw*{w}:h=ih*{h}:x=iw*{x}:y=ih*{y}")
+        video_filter.append(f"crop=w=iw*{w}:h=ih*{h}:x=iw*{x}:y=ih*{y}")
 
+    if params.get("vf", False):
+        video_filter.append("vflip")
 
-    #build.append(f"-vf drawtext=\"expansion=strftime:fontsize=24:fontcolor=red:shadowcolor=black:shadowx=2:shadowy=1:text='%Y-%m-%d\ %H\\\\:%M\\\\:%S':x=10:y=10\"")
+    if params.get("hf", False):
+        video_filter.append("hflip")
 
+    if params.get("date", False):
+        video_filter.append("drawtext=expansion=strftime:fontsize=24:fontcolor=red:shadowcolor=black:shadowx=2:shadowy=1:text='%Y-%m-%d\\ %H-%M-%S':x=10:y=10")
+
+    if len(video_filter) > 0:
+        vfs = ', '.join(video_filter)
+        build.append(f"-vf '{vfs}'")
 
     return ' '.join(build)
 
