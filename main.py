@@ -188,6 +188,8 @@ def run_process(cmd):
 def build_ffmpeg_params(params):
     build = []
 
+    print("params", params)
+
     if params.get("vf", False):
         build.append("-vf vflip")
 
@@ -208,10 +210,8 @@ def build_ffmpeg_params(params):
         build.append(f"-vf crop=w=iw*{w}:h=ih*{h}:x=iw*{x}:y=ih*{y}")
 
 
-    build.append(f"-vf drawtext=\"expansion=strftime:fontsize=24:fontcolor=red:shadowcolor=black:shadowx=2:shadowy=1:text='%Y-%m-%d\ %H\\\\:%M\\\\:%S':x=10:y=10\"")
-    #build.append("-vf drawtext=\"fontsize=24:fontcolor=red:shadowcolor=black:shadowx=2:shadowy=1:text='%{localtime\\:%Y-%m-%d\ %H\\\\:%M\\\\:%S':x=8:y=8\"")
+    #build.append(f"-vf drawtext=\"expansion=strftime:fontsize=24:fontcolor=red:shadowcolor=black:shadowx=2:shadowy=1:text='%Y-%m-%d\ %H\\\\:%M\\\\:%S':x=10:y=10\"")
 
-    #text='%{localtime\\:%H %M %S}'
 
     return ' '.join(build)
 
@@ -237,7 +237,7 @@ def build_command(cmd) -> StreamCommand:
         return StreamCommand(exe, instant=True)
 
     elif cmd['cmd'] == PERFORM_UPDATE:
-        exe = 'git pull && sudo reboot'
+        exe = './updateController.sh'
         return StreamCommand(exe, instant=True, cmd_id=cmd['id'])
 
     elif cmd['cmd'] == SHUTDOWN:
